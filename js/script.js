@@ -1,92 +1,95 @@
-document.addEventListener("DOMContentLoaded", function () {
-    setupForm(".form-input_ftr");
-    setupForm(".another-form-selector");
-
-    function setupForm(formSelector) {
-        const form = document.querySelector(formSelector);
+document.addEventListener("DOMContentLoaded", () => {
+    function setupForm(form) {
         if (!form) return;
+
+        const inputs = {
+            name: form.querySelector("#user-name"),
+            phone: form.querySelector("#user-phone"),
+            email: form.querySelector("input[name='user-email']"),
+            question: form.querySelectorAll("input[name='user-email']")[1] || null,
+            privacy: form.querySelector("#user-privacy"),
+        };
         
-        const nameInput = form.querySelector("#user-name");
-        const phoneInput = form.querySelector("#user-phone");
-        const emailInputs = form.querySelectorAll("input[name='user-email']");
-        const questionInput = emailInputs.length > 1 ? emailInputs[1] : null;
-        const emailInput = emailInputs[0];
-        const privacyCheckbox = form.querySelector("#user-privacy");
         const submitButton = form.querySelector(".button-send_ftr");
-
-        submitButton.addEventListener("click", function (event) {
+        submitButton.addEventListener("click", (event) => {
             event.preventDefault();
-            let isValid = true;
+            clearErrors(form);
 
-            form.querySelectorAll(".error-message").forEach(el => el.remove());
-
-            if (nameInput && nameInput.value.trim() === "") {
-                showError(nameInput, "Введите ваше имя.");
-                isValid = false;
-            }
-
-            const phonePattern = /^\+1 \(\d{3}\) \d{3}-\d{4}$/;
-            if (!phonePattern.test(phoneInput.value.trim())) {
-                showError(phoneInput, "Введите корректный номер телефона.");
-                isValid = false;
-            }
-
-            const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailPattern.test(emailInput.value.trim())) {
-                showError(emailInput, "Введите корректный email.");
-                isValid = false;
-            }
-
-            if (questionInput && questionInput.value.trim() === "") {
-                showError(questionInput, "Поле не должно быть пустым.");
-                isValid = false;
-            }
-
-            if (privacyCheckbox && !privacyCheckbox.checked) {
-                showError(privacyCheckbox, "Вы должны согласиться с обработкой данных.");
-                isValid = false;
-            }
-
-            if (isValid) {
-                sendForm(form, nameInput, phoneInput, emailInput, questionInput);
+            if (validateForm(inputs)) {
+                sendForm(form, inputs);
             }
         });
     }
 
+    function validateForm(inputs) {
+        let isValid = true;
+        const patterns = {
+            phone: /^\+1 \(\d{3}\) \d{3}-\d{4}$/, 
+            email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+        };
+        
+        if (inputs.name && !inputs.name.value.trim()) {
+            showError(inputs.name, "Введите ваше имя.");
+            isValid = false;
+        }
+
+        if (inputs.phone && !patterns.phone.test(inputs.phone.value.trim())) {
+            showError(inputs.phone, "Введите корректный номер телефона.");
+            isValid = false;
+        }
+
+        if (inputs.email && !patterns.email.test(inputs.email.value.trim())) {
+            showError(inputs.email, "Введите корректный email.");
+            isValid = false;
+        }
+
+        if (inputs.question && !inputs.question.value.trim()) {
+            showError(inputs.question, "Поле не должно быть пустым.");
+            isValid = false;
+        }
+
+        if (inputs.privacy && !inputs.privacy.checked) {
+            showError(inputs.privacy, "Вы должны согласиться с обработкой данных.");
+            isValid = false;
+        }
+
+        return isValid;
+    }
+
     function showError(input, message) {
         const errorElement = document.createElement("div");
+        Object.assign(errorElement.style, {
+            color: "red", fontSize: "12px", marginTop: "5px"
+        });
         errorElement.classList.add("error-message");
-        errorElement.style.color = "red";
-        errorElement.style.fontSize = "12px";
-        errorElement.style.marginTop = "5px";
         errorElement.textContent = message;
         input.parentNode.appendChild(errorElement);
     }
 
-    function sendForm(form, nameInput, phoneInput, emailInput, questionInput) {
+    function clearErrors(form) {
+        form.querySelectorAll(".error-message").forEach(el => el.remove());
+    }
+
+    function sendForm(form, inputs) {
         const formData = {
-            name: nameInput ? nameInput.value.trim() : "",
-            phone: phoneInput.value.trim(),
-            email: emailInput.value.trim(),
-            question: questionInput ? questionInput.value.trim() : ""
+            name: inputs.name?.value.trim() || "",
+            phone: inputs.phone.value.trim(),
+            email: inputs.email.value.trim(),
+            question: inputs.question?.value.trim() || ""
         };
 
         fetch("https://example.com/submit-form", {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify(formData)
         })
         .then(response => response.json())
-        .then(data => {
+        .then(() => {
             alert("Форма успешно отправлена!");
-            if (nameInput) nameInput.value = "";
-            phoneInput.value = "";
-            emailInput.value = "";
-            if (questionInput) questionInput.value = "";
-            const privacyCheckbox = form.querySelector("#user-privacy");
-            if (privacyCheckbox) privacyCheckbox.checked = false;
+            Object.values(inputs).forEach(input => {
+                if (input) input.value = "";
+            });
+            if (inputs.privacy) inputs.privacy.checked = false;
         })
         .catch(error => {
             console.error("Ошибка отправки формы:", error);

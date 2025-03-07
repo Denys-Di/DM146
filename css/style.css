@@ -634,6 +634,8 @@ a {
     position: relative;
 }
 
+
+
 .modal-input {
     width: 250px;
     padding: 14px 42px;
@@ -642,6 +644,7 @@ a {
     border-bottom: 2px solid #26292F;
     font-size: 16px;
     font-weight: 400;
+    color: #E5E5E5;
 }
 
 .modal_img {
@@ -677,6 +680,10 @@ a {
     left: -25px;
 }
 
+.modal-check:checked~.modal-label .cub {
+    background-color: #ffffff97;
+}
+
 .button-send {
     background-color: #FA5533;
     color: #1E2027;
@@ -685,6 +692,11 @@ a {
     border: none;
     font-size: 14px;
     line-height: 16.1px;
+}
+
+.icon-check {
+    width: 10px;
+    height: 8px;
 }
 
 .container_ftr{
@@ -731,18 +743,6 @@ a {
     align-items: center;
     flex-direction: column;
     gap: 30px;
-}
-
-.cub_ftr{
-    border: 2px solid #FA5533;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 20px;
-    height: 20px;
-    position: absolute;
-    left: -35px;
-    bottom: 15px;
 }
 
 .button-send_ftr{
